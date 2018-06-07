@@ -28,6 +28,9 @@
 #include "DHT.h" // DHT22 and other sensors in the DHT range
 #include <Servo.h> 
 // Update these with values suitable for your network.
+#define tempo 10
+int frequencia = 0;
+
 Servo myservo;
 const char* ssid = "Thales300";
 const char* password = "@326159487tt";
@@ -115,18 +118,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
         Serial.print("Off");
       }
   }
+  
   if(teste == "taiko/wifiServo"){
      myservo.write(messageTemp.toInt());
     }
 
   if(teste == "taiko/wifiRele"){
-      Serial.print("Changing all lamp to ");
+      Serial.print("Changing rele to ");
       if(messageTemp == "on"){
-        digitalWrite(15, HIGH);
+        digitalWrite(0, HIGH);
         Serial.print("On");
       }
       else if(messageTemp == "off"){
-        digitalWrite(15, LOW);
+        digitalWrite(0, LOW);
         
         Serial.print("Off");
       }
@@ -136,11 +140,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if(teste == "taiko/wifiBuzzer"){
       Serial.print("Changing all lamp to ");
       if(messageTemp == "on"){
-        digitalWrite(16, HIGH);
+        for (frequencia = 150; frequencia < 1800; frequencia += 1) 
+        {
+          tone(10, frequencia, tempo); 
+          delay(1);
+        }
+        for (frequencia = 1800; frequencia > 150; frequencia -= 1) 
+        {
+          tone(10, frequencia, tempo); 
+          delay(1);
+        }
         Serial.print("On");
       }
       else if(messageTemp == "off"){
-        digitalWrite(16, LOW);
+        digitalWrite(10, LOW);
         
         Serial.print("Off");
       }
@@ -168,6 +181,7 @@ void reconnect() {
       client.subscribe("room/lampAll");
       client.subscribe("taiko/wifiRele");
       client.subscribe("taiko/wifiServo");
+      client.subscribe("taiko/wifiBuzzer");
       
     } else {
       Serial.print("failed, rc=");
@@ -183,9 +197,12 @@ void setup() {
   pinMode(lamp, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(13, OUTPUT); 
   pinMode(12, OUTPUT);
-  pinMode(15, OUTPUT); 
+  pinMode(16, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(4, OUTPUT); 
+  pinMode(10,OUTPUT); 
   /************************* SERVO ******************************************/
-  myservo.attach(15);
+  myservo.attach(4);
   
   /************************* DHT22 Setup *************************************/
   Serial.println("DHTxx test!"); // Prints out to the serial monitor console
